@@ -4,7 +4,7 @@ import PyPDF2
 def find_and_merge_pdfs(directories, roll_number, output_file):
     merger = PyPDF2.PdfMerger()
     valid_grades = ['A', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D']
-    invalid_terms = ['Retotaling', 'Rechecking']
+    invalid_terms = ['F', 'Abs', 'Expelled', 'Withheld', '', 'CNR', 'Rechecking', 'Re-totaling']
 
     for dir_path in directories:
         for root, _, files in os.walk(dir_path):
@@ -17,18 +17,18 @@ def find_and_merge_pdfs(directories, roll_number, output_file):
                             page = reader.pages[page_num]
                             text = page.extract_text()
                             if roll_number in text:
-                                
                                 lines = text.split('\n')
                                 for line in lines:
                                     if roll_number in line:
-                                        
-                                        if any(grade in line for grade in valid_grades) and not any(term in line for term in invalid_terms):
+                                        grades_in_line = [grade for grade in line.split() if grade in valid_grades + invalid_terms]
+                                        # Merge the page if there is any valid grade present
+                                        if any(grade in valid_grades for grade in grades_in_line):
                                             merger.append(fileobj=pdf_file, pages=(page_num, page_num + 1))
-                                            break  
+                                            break  # Stop after finding the first relevant page
                                 else:
                                     continue
                                 break
- 
+
     if merger.pages:
         with open(output_file, 'wb') as output_pdf:
             merger.write(output_pdf)
