@@ -9,11 +9,21 @@ def extract_text_from_pdf(pdf_path):
     text = ""
     for page_num in range(pdf_document.page_count):
         page = pdf_document.load_page(page_num)
-        text += page.get_text()
+        text += page.get_text("text")
     return text
 
-# Function to parse and print results for a specific student
+# Function to parse and print results for the first semester
 def parse_and_print_results(text, student_id):
+    # Define subjects for the first semester
+    subjects = [
+        "Engineering Mathematics I",
+        "Physics",
+        "Communication Techniques",
+        "Problem Solving Techniques",
+        "Basic Electrical Engineering",
+        "Programming in C"
+    ]
+    
     # Find the student's data block
     student_data_start = text.find(student_id)
     if student_data_start == -1:
@@ -23,38 +33,39 @@ def parse_and_print_results(text, student_id):
     # Extract the lines corresponding to the student's data
     lines = text[student_data_start:].split('\n')
     
-    # Filter out empty lines and strip whitespaces
-    lines = [line.strip() for line in lines if line.strip()]
+    # Combine lines until reaching the end of the data block
+    student_data = []
+    for line in lines:
+        if line.strip().isdigit() or line.strip().startswith(student_id):
+            student_data.append(line.strip())
+        else:
+            break
     
-    # Assuming the number of lines for each semester block and SGPA line
-    semester_lines = 7  # 6 subjects + 1 SGPA line
-
+    # Combine the data lines
+    student_line = " ".join(student_data)
+    
+    # Split the student's data line into words
+    data = student_line.split()
+    
+    # Ensure the data length matches the expected number of subjects + 2 (for ID and SGPA)
+    if len(data) != len(subjects) + 2:
+        print("The data format does not match the expected number of subjects.")
+        return
+    
     # Print the results in a formatted table
-    print(f"Results for student {student_id}:")
-    for semester_start in range(0, len(lines), semester_lines):
-        semester_data = lines[semester_start:semester_start + semester_lines]
-        
-        # Print semester header
-        print("\n" + "-" * 40)
-        print(f"{'Subject':<30} {'Grade':<10}")
-        print("-" * 40)
-        
-        subjects = [
-            "Engineering Mathematics I",
-            "Physics",
-            "Communication Techniques",
-            "Problem Solving Techniques",
-            "Basic Electrical Engineering",
-            "Programming in C"
-        ]
-        
-        for subject, line in zip(subjects, semester_data[1:]):  # Skip the first line (student ID)
-            grade = line.split()[1] if len(line.split()) > 1 else "N/A"
-            print(f"{subject:<30} {grade:<10}")
-        
-        # Print SGPA if available
-        if "SGPA" in semester_data[-1]:
-            print(f"\nSGPA: {semester_data[-1].split()[-1]}")
+    print(f"Results for student {student_id} (First Semester):")
+    print("-" * 60)
+    print(f"{'Subject':<40} {'Grade':<10}")
+    print("-" * 60)
+    
+    # Extract and print grades for each subject
+    for i, subject in enumerate(subjects):
+        grade = data[i + 1]
+        print(f"{subject:<40} {grade:<10}")
+    
+    # Print SGPA if available
+    sgpa = data[-1]
+    print(f"\nSGPA: {sgpa}")
 
 # Extract text from the PDF
 pdf_text = extract_text_from_pdf(pdf_path)
