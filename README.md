@@ -1,6 +1,7 @@
 # Pokhara University Result Organiser
 
 A Python script to automate merging PDF result pages, excluding those with only failing grades or invalid terms.
+There are still some problems with this program. Contributions are welcome. Let's work together to make future graduate's life little bit easy.
 
 ## Deployment
 
